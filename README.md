@@ -1,0 +1,1 @@
+# NyaNya Rocket! dedicated game server
