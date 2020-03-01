@@ -35,8 +35,7 @@ class HttpInterface {
     print('[INFO] Listening on $port');
 
     await for (HttpRequest request in server) {
-      unawaited(_handleRequest(request)
-          .then((dynamic _) => print('[INFO] Request handled')));
+      unawaited(_handleRequest(request));
     }
   }
 
@@ -108,7 +107,8 @@ class HttpInterface {
 
   Future _handleRequest(HttpRequest request) async {
     try {
-      print('[INFO] Received ${request.method} request: ${request.uri.path}');
+      print(
+          '[INFO] Received ${request.method} request: ${request.uri.path} from ${request.connectionInfo.remoteAddress}.');
 
       if (!request.uri.queryParameters.containsKey('key') ||
           request.uri.queryParameters['key'] != key) {
@@ -141,7 +141,7 @@ class HttpInterface {
 
       return _handleNotFound(request);
     } catch (e) {
-      print('[ERROR] Exception in handleRequest: $e');
+      print('[ERROR] Could not handle request: $e');
     }
   }
 }
