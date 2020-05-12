@@ -19,11 +19,9 @@ class _ServerInfo {
 }
 
 class HttpInterface {
-  final String key;
-
   final ServerOrchester _serverOrchester;
 
-  HttpInterface({@required int capacity, @required this.key})
+  HttpInterface({@required int capacity})
       : _serverOrchester = ServerOrchester(capacity: capacity);
 
   Future<void> serve({int port = 8080}) async {
@@ -88,14 +86,6 @@ class HttpInterface {
     return request.response.close();
   }
 
-  Future _handleUnauthorized(HttpRequest request) {
-    print(
-        '[WARN] Unauthorized: ${request.uri}, ${request.connectionInfo.remoteAddress.address}');
-    request.response.statusCode = HttpStatus.unauthorized;
-    request.response.add(utf8.encode('Unauthorized'));
-    return request.response.close();
-  }
-
   Future _handleNotFound(HttpRequest request) {
     print(
         '[WARN] Not Found: ${request.uri}, ${request.connectionInfo.remoteAddress.address}');
@@ -109,11 +99,6 @@ class HttpInterface {
     try {
       print(
           '[INFO] Received ${request.method} request: ${request.uri.path} from ${request.connectionInfo.remoteAddress}.');
-
-      if (!request.uri.queryParameters.containsKey('key') ||
-          request.uri.queryParameters['key'] != key) {
-        return _handleUnauthorized(request);
-      }
 
       if (request.method == 'GET') {
         switch (request.uri.path) {

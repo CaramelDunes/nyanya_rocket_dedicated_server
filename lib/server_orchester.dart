@@ -45,7 +45,7 @@ class ServerOrchester {
         _ServerParameters serverParametersWithPort = _ServerParameters(
             port: basePort + i,
             gameParameters:
-            GameParameters(board: Board.withBorder(), playerCount: 4),
+                GameParameters(board: Board.withBorder(), playerCount: 4),
             tickets: _generateTickets(4));
 
         ReceivePort onExitReceivePort = ReceivePort();
@@ -54,7 +54,7 @@ class ServerOrchester {
             _serverEntrypoint, serverParametersWithPort,
             onExit: onExitReceivePort.sendPort, paused: true);
         _ServerInstance serverInstance =
-        _ServerInstance(isolate: newServer, launchTime: DateTime.now());
+            _ServerInstance(isolate: newServer, launchTime: DateTime.now());
         _serverInstances.add(serverInstance);
 
         onExitReceivePort.listen((message) {
@@ -92,7 +92,7 @@ class ServerOrchester {
         onExit: onExitReceivePort.sendPort, paused: true);
 
     _ServerInstance serverInstance =
-    _ServerInstance(isolate: newServer, launchTime: DateTime.now());
+        _ServerInstance(isolate: newServer, launchTime: DateTime.now());
     _serverInstances.add(serverInstance);
 
     onExitReceivePort.listen((message) {
