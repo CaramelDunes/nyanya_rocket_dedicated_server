@@ -16,11 +16,16 @@ class _ServerInstance {
 }
 
 class _ServerParameters {
+  final int id;
   final int port;
   final GameParameters gameParameters;
   final Set<int> tickets;
 
-  _ServerParameters({this.tickets, this.port, this.gameParameters});
+  _ServerParameters(
+      {@required this.id,
+      this.tickets,
+      @required this.port,
+      @required this.gameParameters});
 }
 
 class ServerOrchester {
@@ -43,6 +48,7 @@ class ServerOrchester {
     try {
       for (int i = 0; i < capacity; i++) {
         _ServerParameters serverParametersWithPort = _ServerParameters(
+            id: _rng.nextInt(2 << 32),
             port: basePort + i,
             gameParameters:
                 GameParameters(board: Board.withBorder(), playerCount: 4),
@@ -81,6 +87,7 @@ class ServerOrchester {
     availablePorts.remove(port);
 
     _ServerParameters serverParametersWithPort = _ServerParameters(
+        id: _rng.nextInt(1 << 32),
         port: port,
         gameParameters: parameters,
         tickets: _generateTickets(parameters.playerCount));
@@ -118,17 +125,24 @@ class ServerOrchester {
 
   static void _serverEntrypoint(_ServerParameters parameters) {
     Timer(Duration(minutes: 4), () {
+      print('[STATS] Killed after 4 minutes.');
       Isolate.current.kill();
     });
 
     GameServer gameServer = GameServer(
-        board: parameters.gameParameters.board,
-        port: parameters.port,
-        playerCount: parameters.gameParameters.playerCount,
-        tickets: parameters.tickets);
+      board: parameters.gameParameters.board,
+      port: parameters.port,
+      playerCount: parameters.gameParameters.playerCount,
+      gameDuration: const Duration(minutes: 3),
+      tickets: parameters.tickets,
+      onGameEnd: (scores) {
+        print('[STATS] Game ${parameters.id} ended with scores $scores');
+      },
+    );
 
     Timer(Duration(minutes: 1), () {
       if (!gameServer.running) {
+        print('[STATS] Killed after 1 minute of inactivity.');
         Isolate.current.kill();
       }
     });

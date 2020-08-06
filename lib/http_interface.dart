@@ -97,8 +97,8 @@ class HttpInterface {
 
   Future _handleRequest(HttpRequest request) async {
     try {
-      print(
-          '[INFO] Received ${request.method} request: ${request.uri.path} from ${request.connectionInfo.remoteAddress}.');
+      // print(
+      //     '[INFO] Received ${request.method} request: ${request.uri.path} from ${request.connectionInfo.remoteAddress}.');
 
       if (request.method == 'GET') {
         switch (request.uri.path) {
