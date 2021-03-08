@@ -3,14 +3,14 @@ import 'dart:collection';
 import 'dart:isolate';
 import 'dart:math';
 
-import 'package:meta/meta.dart';
 import 'package:nyanya_rocket_base/nyanya_rocket_base.dart';
-import 'package:nyanya_rocket_cloud_server/new_server_info.dart';
+
+import 'new_server_info.dart';
 import 'server_parameters.dart';
 
 class _ServerInstance {
-  final Isolate isolate;
-  final DateTime launchTime;
+  final Isolate? isolate;
+  final DateTime? launchTime;
 
   _ServerInstance({this.isolate, this.launchTime});
 }
@@ -19,13 +19,13 @@ class _ServerParameters {
   final int id;
   final int port;
   final GameParameters gameParameters;
-  final Set<int> tickets;
+  final Set<int>? tickets;
 
   _ServerParameters(
-      {@required this.id,
+      {required this.id,
       this.tickets,
-      @required this.port,
-      @required this.gameParameters});
+      required this.port,
+      required this.gameParameters});
 }
 
 class ServerOrchester {
@@ -36,7 +36,7 @@ class ServerOrchester {
   final List<_ServerInstance> _serverInstances = [];
   final Set<int> availablePorts = HashSet();
 
-  ServerOrchester({@required this.capacity}) {
+  ServerOrchester({required this.capacity}) {
     for (int i = 0; i < capacity; i++) {
       availablePorts.add(basePort + i);
     }
@@ -44,41 +44,7 @@ class ServerOrchester {
 
   int get instanceCount => _serverInstances.length;
 
-  Future<bool> testCapacity() async {
-    try {
-      for (int i = 0; i < capacity; i++) {
-        _ServerParameters serverParametersWithPort = _ServerParameters(
-            id: _rng.nextInt(2 << 32),
-            port: basePort + i,
-            gameParameters:
-                GameParameters(board: Board.withBorder(), playerCount: 4),
-            tickets: _generateTickets(4));
-
-        ReceivePort onExitReceivePort = ReceivePort();
-
-        Isolate newServer = await Isolate.spawn(
-            _serverEntrypoint, serverParametersWithPort,
-            onExit: onExitReceivePort.sendPort, paused: true);
-        _ServerInstance serverInstance =
-            _ServerInstance(isolate: newServer, launchTime: DateTime.now());
-        _serverInstances.add(serverInstance);
-
-        onExitReceivePort.listen((message) {
-          print('[INFO] Test isolate stopped');
-          _serverInstances.remove(serverInstance);
-        });
-
-        newServer.resume(newServer.pauseCapability);
-      }
-    } catch (e) {
-      print('[ERROR] Capacity test failed with $e');
-      return false;
-    }
-
-    return true;
-  }
-
-  Future<NewServerInfo> launchServer(GameParameters parameters) async {
+  Future<NewServerInfo?> launchServer(GameParameters parameters) async {
     if (availablePorts.isEmpty) {
       return null;
     }
@@ -108,9 +74,14 @@ class ServerOrchester {
       _serverInstances.remove(serverInstance);
     });
 
-    newServer.resume(newServer.pauseCapability);
+    if (newServer.pauseCapability != null) {
+      newServer.resume(newServer.pauseCapability!);
+    } else {
+      print('[ERROR] Could not resume isolate.');
+    }
 
-    return NewServerInfo(port: port, tickets: serverParametersWithPort.tickets);
+    return NewServerInfo(
+        port: port, tickets: serverParametersWithPort.tickets!);
   }
 
   Set<int> _generateTickets(int numberOfTickets) {
@@ -146,5 +117,43 @@ class ServerOrchester {
         Isolate.current.kill();
       }
     });
+  }
+
+  Future<bool> testCapacity() async {
+    try {
+      for (int i = 0; i < capacity; i++) {
+        _ServerParameters serverParametersWithPort = _ServerParameters(
+            id: _rng.nextInt(2 << 32),
+            port: basePort + i,
+            gameParameters:
+                GameParameters(board: Board.withBorder(), playerCount: 4),
+            tickets: _generateTickets(4));
+
+        ReceivePort onExitReceivePort = ReceivePort();
+
+        Isolate newServer = await Isolate.spawn(
+            _serverEntrypoint, serverParametersWithPort,
+            onExit: onExitReceivePort.sendPort, paused: true);
+        _ServerInstance serverInstance =
+            _ServerInstance(isolate: newServer, launchTime: DateTime.now());
+        _serverInstances.add(serverInstance);
+
+        onExitReceivePort.listen((message) {
+          print('[INFO] Test isolate stopped');
+          _serverInstances.remove(serverInstance);
+        });
+
+        if (newServer.pauseCapability != null) {
+          newServer.resume(newServer.pauseCapability!);
+        } else {
+          print('[ERROR] Could not resume isolate.');
+        }
+      }
+    } catch (e) {
+      print('[ERROR] Capacity test failed with $e');
+      return false;
+    }
+
+    return true;
   }
 }

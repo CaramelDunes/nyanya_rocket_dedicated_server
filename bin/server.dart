@@ -11,7 +11,7 @@ Future main(List<String> arguments) async {
   int capacity = defaultCapacity;
 
   if (environment[capacityEnvName] != null) {
-    capacity = int.tryParse(environment[capacityEnvName]) ?? defaultCapacity;
+    capacity = int.tryParse(environment[capacityEnvName]!) ?? defaultCapacity;
   }
   print('[INFO] Starting server with capacity $capacity');
 

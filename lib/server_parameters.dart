@@ -4,7 +4,7 @@ class GameParameters {
   final int playerCount;
   final Board board;
 
-  GameParameters({this.playerCount, this.board});
+  GameParameters({required this.playerCount, required this.board});
 
   static GameParameters fromJson(Map<String, dynamic> json) {
     int playerCount = json['playerCount'];

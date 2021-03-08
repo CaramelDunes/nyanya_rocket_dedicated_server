@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:meta/meta.dart';
-import 'package:nyanya_rocket_cloud_server/new_server_info.dart';
-import 'package:nyanya_rocket_cloud_server/server_parameters.dart';
 import 'package:pedantic/pedantic.dart';
+
+import 'new_server_info.dart';
+import 'server_parameters.dart';
 import 'server_orchester.dart';
 
 class _ServerInfo {
   final int totalCapacity;
   final int usedCapacity;
 
-  _ServerInfo({@required this.totalCapacity, @required this.usedCapacity});
+  _ServerInfo({required this.totalCapacity, required this.usedCapacity});
 
   Map<String, dynamic> toJson() =>
       {'totalCapacity': totalCapacity, 'usedCapacity': usedCapacity};
@@ -21,7 +21,7 @@ class _ServerInfo {
 class HttpInterface {
   final ServerOrchester _serverOrchester;
 
-  HttpInterface({@required int capacity})
+  HttpInterface({required int capacity})
       : _serverOrchester = ServerOrchester(capacity: capacity);
 
   Future<void> serve({int port = 8080}) async {
@@ -39,7 +39,7 @@ class HttpInterface {
 
   Future _handleLaunchRequest(HttpRequest request) async {
     String content = await utf8.decoder.bind(request).join();
-    Map<String, dynamic> data = jsonDecode(content) as Map;
+    Map<String, dynamic> data = jsonDecode(content) as Map<String, dynamic>;
 
     GameParameters parameters;
     try {
@@ -52,7 +52,7 @@ class HttpInterface {
       return request.response.close();
     }
 
-    NewServerInfo newServerInfo =
+    NewServerInfo? newServerInfo =
         await _serverOrchester.launchServer(parameters);
 
     if (newServerInfo == null) {
@@ -88,7 +88,7 @@ class HttpInterface {
 
   Future _handleNotFound(HttpRequest request) {
     print(
-        '[WARN] Not Found: ${request.uri}, ${request.connectionInfo.remoteAddress.address}');
+        '[WARN] Not Found: ${request.uri}, ${request.connectionInfo?.remoteAddress.address}');
     HttpResponse response = request.response;
     response.statusCode = HttpStatus.notFound;
     response.add(utf8.encode('Not Found'));
@@ -104,11 +104,9 @@ class HttpInterface {
         switch (request.uri.path) {
           case '/info':
             return _handleInfoRequest(request);
-            break;
 
           case '/test':
             return _handleTestRequest(request);
-            break;
 
           default:
             break;
@@ -117,7 +115,6 @@ class HttpInterface {
         switch (request.uri.path) {
           case '/launch':
             return _handleLaunchRequest(request);
-            break;
 
           default:
             break;
