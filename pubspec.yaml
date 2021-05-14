@@ -8,9 +8,7 @@ environment:
 
 dependencies:
   nyanya_rocket_base:
-    git:
-      url: git://github.com/CaramelDunes/nyanya_rocket_base.git
-      ref: feature/nnbd
+    git: https://github.com/CaramelDunes/nyanya_rocket_base.git
 
 dev_dependencies:
   pedantic: ^1.11.0
