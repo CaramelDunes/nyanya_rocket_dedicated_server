@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:pedantic/pedantic.dart';
-
 import 'new_server_info.dart';
 import 'server_parameters.dart';
 import 'server_orchester.dart';
